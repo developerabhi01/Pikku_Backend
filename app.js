@@ -1,30 +1,45 @@
-const express = require('express')
-
+const express = require("express")
+const mongoose = require("mongoose")
 const app = express();
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser')
-require('dotenv/config');
+require("dotenv/config")
 
-// //Middlewares
-// app.use('/posts', () => {
-//     console.log('This is middleware running')
-// })
+const User = require("./model/user")
 
-app.use(bodyParser.json())
+const customMiddleware = (req, res, next) => {
+    // console.log("Welcome to my middleware")
+    next();
+}
+app.use(customMiddleware)
 
-//Import Routes
-const postsRoute = require('./routes/posts')
+app.use(express.json())
 
-app.use('/posts', postsRoute)
-
-//Routes
-app.get('/', (req, res) => {
-    res.send('We are on home');
+app.get("/", (req, res) => {
+    res.send("Home Request")
 })
 
-//Connect to DB
-mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true }, () => {
-    console.log('Connected to DB')
+app.get("/users", (req, res) => {
+    User.find({}).then(function (users) {
+        res.send({ users: users })
+    });
 })
 
-app.listen(3000)
+app.post("/create_user", async (req, res) => {
+    try {
+        const myUser = new User(req.body);
+        await myUser.save()
+        res.send(myUser)
+    } catch (err) {
+        res.send({ message: err })
+    }
+})
+
+mongoose.connect(process.env.DB_CONNECTION, { useUnifiedTopology: true, useNewUrlParser: true });
+
+mongoose.Promise = global.Promise;
+mongoose.connection.on("error", error => {
+    console.log('Problem connection to the database' + error);
+});
+
+app.listen(3000, () => {
+    console.log('listneing tp 300')
+})
