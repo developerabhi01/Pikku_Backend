@@ -41,5 +41,5 @@ mongoose.connection.on("error", error => {
 });
 
 app.listen(3000, () => {
-    console.log('listneing tp 300')
+    console.log('listneing t0 3000')
 })
